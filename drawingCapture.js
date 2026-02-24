@@ -11,6 +11,7 @@ class DrawingCaptureSystem {
         this.ctx = canvas.getContext('2d');
         this.session = null;
         this.currentStroke = null;
+        this.currentBrushState = null;
         this.isDrawing = false;
         
         // Duration tracking variables
@@ -84,6 +85,10 @@ class DrawingCaptureSystem {
             return 'mouse';
         }
         return 'unknown';
+    }
+
+    setBrushState(brushState) {
+        this.currentBrushState = brushState;
     }
 
     startSession(taskId = 'drawing_modal') {
@@ -212,6 +217,8 @@ class DrawingCaptureSystem {
             // First stroke - pause is time since session start
             pauseBeforeStroke = now - this.sessionStartTime;
         }
+
+        const brushState = this.currentBrushState || {};
         
         // Create new stroke
         this.currentStroke = {
@@ -223,6 +230,10 @@ class DrawingCaptureSystem {
             pauseBeforeStroke: pauseBeforeStroke,
             inputType: inputType,
             pressureData: event.pressure !== undefined && event.pressure !== 0.5,
+            color: brushState.color || null,
+            size: brushState.size || null,
+            opacity: brushState.opacity || null,
+            tool: brushState.tool || null,
             points: []
         };
         

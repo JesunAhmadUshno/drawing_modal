@@ -210,6 +210,10 @@ Simply visit the application at:
 - **Hover Path Link** - ID of preceding in-air trajectory
 - **Input Type** - `mouse` | `stylus` | `finger`
 - **Pressure Data Available** - Boolean flag
+- **Color** - Hex color code used for stroke (e.g., `#ff0000`)
+- **Size** - Brush size in pixels (1-50)
+- **Opacity** - Brush opacity as decimal (0-1)
+- **Tool** - Tool used (`pen` | `eraser` | `shape` | etc.)
 
 **Per-Point Data (in `points[]` array):**
 - **x, y** - Canvas coordinates (px)
@@ -396,6 +400,10 @@ this.pressureSensitive = true;  // Enable pressure input
       "maxVelocity": 789.45,
       "inputType": "stylus",
       "pressureData": true,
+      "color": "#000000",
+      "size": 12,
+      "opacity": 1,
+      "tool": "pen",
       "points": [
         {
           "x": 241,
@@ -515,6 +523,10 @@ this.pressureSensitive = true;  // Enable pressure input
 | `hoverPathBeforeStroke` | String | Linked hover path ID | - |
 | `inputType` | String | Input device type | - |
 | `pressureData` | Boolean | Pressure availability | - |
+| `color` | String | Hex color code | #RRGGBB |
+| `size` | Number | Brush size | px |
+| `opacity` | Number | Brush opacity | 0-1 |
+| `tool` | String | Tool used (pen/eraser/shape) | - |
 
 #### Point-Level Fields (Stroke & Hover)
 | Field | Type | Description | Unit/Range |
@@ -644,6 +656,10 @@ Perfect for sensitive work and GDPR compliance.
 - Velocity (current speed, px/s)
 
 **3. Stroke Metrics** (Last completed stroke)
+- Tool (pen/eraser/shape)
+- Color (hex code with preview)
+- Size (brush size in pixels)
+- Opacity (transparency percentage)
 - Stroke duration (how long it took)
 - Stroke length (total distance, px)
 - Average speed (mean velocity, px/s)

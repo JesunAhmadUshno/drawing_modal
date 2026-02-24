@@ -436,6 +436,24 @@ class DrawingApp {
         // Update last stroke metrics
         if (captureSystem.session && captureSystem.session.strokeData.length > 0) {
             const lastStroke = captureSystem.session.strokeData[captureSystem.session.strokeData.length - 1];
+            
+            // Brush state
+            document.getElementById('strokeTool').textContent = lastStroke.tool || '-';
+            
+            // Color with preview
+            const colorSpan = document.getElementById('strokeColor');
+            if (lastStroke.color) {
+                colorSpan.innerHTML = `<span style="display: inline-block; width: 16px; height: 16px; background: ${lastStroke.color}; border: 1px solid #ccc; border-radius: 2px;"></span>${lastStroke.color}`;
+            } else {
+                colorSpan.textContent = '-';
+            }
+            
+            document.getElementById('strokeSize').textContent = lastStroke.size ? 
+                `${lastStroke.size}px` : '-';
+            document.getElementById('strokeOpacity').textContent = lastStroke.opacity ? 
+                `${Math.round(lastStroke.opacity * 100)}%` : '-';
+            
+            // Metrics
             document.getElementById('strokeDuration').textContent = lastStroke.strokeDuration ? 
                 `${(lastStroke.strokeDuration / 1000).toFixed(2)}s` : '-';
             document.getElementById('strokeLength').textContent = lastStroke.trajectoryLength ? 
@@ -447,6 +465,10 @@ class DrawingApp {
             document.getElementById('strokeAvgPressure').textContent = lastStroke.averagePressure ? 
                 `${lastStroke.averagePressure.toFixed(3)}` : '-';
         } else {
+            document.getElementById('strokeTool').textContent = '-';
+            document.getElementById('strokeColor').textContent = '-';
+            document.getElementById('strokeSize').textContent = '-';
+            document.getElementById('strokeOpacity').textContent = '-';
             document.getElementById('strokeDuration').textContent = '-';
             document.getElementById('strokeLength').textContent = '-';
             document.getElementById('strokeAvgSpeed').textContent = '-';
@@ -498,6 +520,15 @@ class DrawingApp {
         this.isDrawing = true;
         const coords = this.getCoords(e);
         const inputData = this.getInputData(e);
+
+        if (this.captureSystem && this.captureSystem.setBrushState) {
+            this.captureSystem.setBrushState({
+                color: this.color,
+                size: this.size,
+                opacity: this.opacity,
+                tool: this.currentTool
+            });
+        }
 
         // Notify capture system of pointer down
         this.captureSystem.handlePointerDown(e);
