@@ -208,6 +208,9 @@ class DrawingApp {
         this.ctx = this.canvas.getContext('2d');
         this.session = new DrawingSession();
         
+        // Initialize capture system for duration tracking (skip its own event listeners)
+        this.captureSystem = new DrawingCaptureSystem(this.canvas, true);
+        
         // Drawing state
         this.isDrawing = false;
         this.currentTool = 'pen';
@@ -230,11 +233,8 @@ class DrawingApp {
     }
 
     init() {
-        // Set canvas size
-        this.canvas.width = 900;
-        this.canvas.height = 600;
-        this.tempCanvas.width = 900;
-        this.tempCanvas.height = 600;
+        // Set responsive canvas size
+        this.setResponsiveCanvasSize();
         
         // White background
         this.ctx.fillStyle = 'white';
@@ -246,6 +246,62 @@ class DrawingApp {
         
         // Event listeners
         this.attachEventListeners();
+        
+        // Handle window resize
+        window.addEventListener('resize', () => this.handleResize());
+    }
+
+    setResponsiveCanvasSize() {
+        const canvasArea = this.canvas.parentElement;
+        const rect = canvasArea.getBoundingClientRect();
+        
+        // Calculate available space
+        let width = 900;
+        let height = 600;
+        
+        // Adjust for different screen sizes
+        if (window.innerWidth <= 480) {
+            // Mobile phones
+            width = Math.min(rect.width - 20, 600);
+            height = Math.min(rect.height - 20, 400);
+        } else if (window.innerWidth <= 768) {
+            // Tablets
+            width = Math.min(rect.width - 30, 750);
+            height = Math.min(rect.height - 30, 500);
+        } else if (window.innerWidth <= 1024) {
+            // Small desktops
+            width = Math.min(rect.width - 40, 850);
+            height = Math.min(rect.height - 40, 580);
+        }
+        
+        this.canvas.width = width;
+        this.canvas.height = height;
+        this.tempCanvas.width = width;
+        this.tempCanvas.height = height;
+    }
+
+    handleResize() {
+        // Save current canvas content
+        const imageData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
+        const oldWidth = this.canvas.width;
+        const oldHeight = this.canvas.height;
+        
+        // Resize canvas
+        this.setResponsiveCanvasSize();
+        
+        // Restore content (scaled if necessary)
+        this.ctx.fillStyle = 'white';
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        
+        // Draw the old image data
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = oldWidth;
+        tempCanvas.height = oldHeight;
+        const tempCtx = tempCanvas.getContext('2d');
+        tempCtx.putImageData(imageData, 0, 0);
+        
+        // Scale to new size
+        this.ctx.drawImage(tempCanvas, 0, 0, oldWidth, oldHeight, 0, 0, this.canvas.width, this.canvas.height);
     }
 
     attachEventListeners() {
@@ -303,7 +359,11 @@ class DrawingApp {
         // Action buttons
         document.getElementById('undoBtn').addEventListener('click', () => this.undo());
         document.getElementById('clearBtn').addEventListener('click', () => this.clear());
-        document.getElementById('saveBtn').addEventListener('click', () => this.session.downloadJSON());
+        document.getElementById('saveBtn').addEventListener('click', () => {
+            if (this.captureSystem && this.captureSystem.session) {
+                this.captureSystem.downloadSession();
+            }
+        });
         document.getElementById('exportPngBtn').addEventListener('click', () => this.exportPNG());
 
         // Keyboard shortcuts
@@ -314,7 +374,9 @@ class DrawingApp {
             }
             if ((e.ctrlKey || e.metaKey) && e.key === 's') {
                 e.preventDefault();
-                this.session.downloadJSON();
+                if (this.captureSystem && this.captureSystem.session) {
+                    this.captureSystem.downloadSession();
+                }
             }
         });
     }
@@ -358,6 +420,9 @@ class DrawingApp {
         const coords = this.getCoords(e);
         const inputData = this.getInputData(e);
 
+        // Notify capture system of pointer down
+        this.captureSystem.handlePointerDown(e);
+
         if (this.currentTool === 'shape') {
             this.shapeStart = coords;
             // Save current canvas state
@@ -377,6 +442,9 @@ class DrawingApp {
         const coords = this.getCoords(e);
         const inputData = this.getInputData(e);
 
+        // Notify capture system of pointer move
+        this.captureSystem.handlePointerMove(e);
+
         if (this.currentTool === 'shape') {
             this.drawShapePreview(coords);
         } else {
@@ -388,6 +456,9 @@ class DrawingApp {
     handleEnd(e) {
         if (!this.isDrawing) return;
         this.isDrawing = false;
+
+        // Notify capture system of pointer up
+        this.captureSystem.handlePointerUp(e);
 
         if (this.currentTool === 'shape' && this.shapeStart) {
             const coords = this.getCoords(e);
@@ -508,7 +579,77 @@ class DrawingApp {
     }
 }
 
+// Global reference to app instance
+let appInstance = null;
+let metricsUpdateInterval = null;
+
+// Update metrics display from capture system
+function updateMetricsDisplay() {
+    if (!appInstance || !appInstance.captureSystem) return;
+    
+    const metrics = appInstance.captureSystem.getCurrentMetrics();
+    if (metrics) {
+        document.getElementById('strokeCount').textContent = metrics.strokes;
+        document.getElementById('totalDuration').textContent = metrics.totalDurationSeconds + 's';
+        document.getElementById('activeDuration').textContent = metrics.activeDurationSeconds + 's';
+        document.getElementById('pauseDuration').textContent = metrics.pauseDurationSeconds + 's';
+        document.getElementById('status').textContent = metrics.status.toUpperCase();
+    }
+}
+
+// Start periodic metrics display update
+function startMetricsUpdate() {
+    metricsUpdateInterval = setInterval(updateMetricsDisplay, 100);
+}
+
+// Stop metrics update
+function stopMetricsUpdate() {
+    if (metricsUpdateInterval) {
+        clearInterval(metricsUpdateInterval);
+    }
+}
+
+// Handle complete button click
+function handleCompleteSession() {
+    if (!appInstance || !appInstance.captureSystem || !appInstance.captureSystem.session) return;
+    
+    const finalData = appInstance.captureSystem.completeSession();
+    stopMetricsUpdate();
+    
+    const alert_msg = `Session Completed!\n\n` +
+        `Total Duration: ${(finalData.totalDuration / 1000).toFixed(2)}s\n` +
+        `Active Duration: ${(finalData.activeDuration / 1000).toFixed(2)}s\n` +
+        `Pause Duration: ${(finalData.pauseDuration / 1000).toFixed(2)}s\n` +
+        `Strokes: ${finalData.strokes}`;
+    
+    alert(alert_msg);
+    
+    // Enable save button to export the completed session
+    console.log('Session completed. Ready for export.');
+}
+
 // Initialize on page load
 window.addEventListener('DOMContentLoaded', () => {
-    new DrawingApp();
+    try {
+        appInstance = new DrawingApp();
+        
+        // Start capture system session
+        appInstance.captureSystem.startSession('drawing_modal');
+        
+        // Initialize UI values
+        updateMetricsDisplay();
+        
+        // Start metrics update
+        startMetricsUpdate();
+        
+        // Add complete button handler
+        const completeBtn = document.getElementById('completeBtn');
+        if (completeBtn) {
+            completeBtn.addEventListener('click', handleCompleteSession);
+        }
+        
+        console.log('Canvas app initialized successfully');
+    } catch (error) {
+        console.error('Failed to initialize canvas app:', error);
+    }
 });

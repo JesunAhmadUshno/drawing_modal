@@ -33,6 +33,24 @@
             padding: 10px 20px;
             border-bottom: 1px solid #404040;
             flex-wrap: wrap;
+            position: relative;
+        }
+
+        .sidebar-toggle {
+            display: none;
+            background: #1177bb;
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            margin-left: auto;
+        }
+
+        .sidebar-toggle:hover {
+            background: #1588cc;
         }
 
         .tool-group {
@@ -47,7 +65,9 @@
         }
 
         .tool-btn {
-            padding: 8px 12px;
+            padding: 10px 14px;
+            min-width: 44px;
+            min-height: 44px;
             background: #3e3e3e;
             border: 1px solid #555;
             color: #cccccc;
@@ -74,8 +94,8 @@
         }
 
         .color-btn {
-            width: 30px;
-            height: 30px;
+            width: 44px;
+            height: 44px;
             border: 2px solid transparent;
             border-radius: 4px;
             cursor: pointer;
@@ -123,6 +143,11 @@
             border-left: 1px solid #404040;
             overflow-y: auto;
             padding: 20px;
+            transition: transform 0.3s ease;
+        }
+
+        .side-panel.hidden {
+            transform: translateX(100%);
         }
 
         .panel-section {
@@ -262,6 +287,132 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #666;
         }
+
+        /* Responsive Design - Media Queries */
+        
+        /* Large Tablets & Small Desktops (1024px and below) */
+        @media (max-width: 1024px) {
+            .side-panel {
+                width: 260px;
+            }
+        }
+
+        /* Tablets (768px and below) */
+        @media (max-width: 768px) {
+            .sidebar-toggle {
+                display: block;
+            }
+
+            .side-panel {
+                position: fixed;
+                right: 0;
+                top: 0;
+                height: 100vh;
+                width: 280px;
+                z-index: 1000;
+                box-shadow: -2px 0 10px rgba(0, 0, 0, 0.3);
+            }
+
+            .main-content {
+                flex-direction: column;
+            }
+
+            .canvas-area {
+                padding: 10px;
+            }
+
+            .toolbar {
+                padding: 8px 15px;
+                gap: 10px;
+            }
+
+            .tool-group {
+                gap: 3px;
+            }
+        }
+
+        /* Mobile Phones (480px and below) */
+        @media (max-width: 480px) {
+            .toolbar {
+                padding: 5px 10px;
+                gap: 5px;
+            }
+
+            .tool-btn {
+                padding: 8px 10px;
+                font-size: 12px;
+            }
+
+            .color-btn {
+                width: 38px;
+                height: 38px;
+            }
+
+            .tool-group {
+                padding-right: 8px;
+            }
+
+            .side-panel {
+                width: 100%;
+                max-width: 320px;
+            }
+
+            .panel-section h3 {
+                font-size: 11px;
+            }
+
+            .action-btn {
+                padding: 10px 15px;
+                font-size: 13px;
+            }
+
+            .data-row {
+                font-size: 11px;
+            }
+
+            .canvas-area {
+                padding: 5px;
+            }
+        }
+
+        /* Mobile Landscape */
+        @media (max-width: 768px) and (orientation: landscape) {
+            .container {
+                height: 100vh;
+            }
+
+            .toolbar {
+                padding: 5px 10px;
+            }
+
+            .canvas-area {
+                padding: 5px;
+            }
+
+            .side-panel {
+                width: 240px;
+            }
+        }
+
+        /* Small phones (320px and below) */
+        @media (max-width: 320px) {
+            .tool-btn {
+                padding: 6px 8px;
+                font-size: 11px;
+                min-width: 38px;
+                min-height: 38px;
+            }
+
+            .color-btn {
+                width: 32px;
+                height: 32px;
+            }
+
+            .sidebar-toggle {
+                padding: 6px 10px;
+                font-size: 12px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -290,6 +441,8 @@
                 <button class="color-btn" data-color="#00ffff" style="background: #00ffff;"></button>
                 <button class="color-btn" data-color="#ffa500" style="background: #ffa500;"></button>
             </div>
+
+            <button class="sidebar-toggle" id="sidebarToggle">☰ Panel</button>
         </div>
 
         <!-- Main Content -->
@@ -327,8 +480,20 @@
                         <span id="strokeCount">0</span>
                     </div>
                     <div class="data-row">
-                        <strong>Duration:</strong>
-                        <span id="duration">0s</span>
+                        <strong>Total Duration:</strong>
+                        <span id="totalDuration">0s</span>
+                    </div>
+                    <div class="data-row">
+                        <strong>Active Duration:</strong>
+                        <span id="activeDuration">0s</span>
+                    </div>
+                    <div class="data-row">
+                        <strong>Pause Duration:</strong>
+                        <span id="pauseDuration">0s</span>
+                    </div>
+                    <div class="data-row">
+                        <strong>Status:</strong>
+                        <span id="status">not started</span>
                     </div>
                     <div class="data-row">
                         <strong>Input:</strong>
@@ -364,6 +529,7 @@
                     <h3>Actions</h3>
                     <button class="action-btn" id="undoBtn">Undo</button>
                     <button class="action-btn" id="clearBtn">Clear Canvas</button>
+                    <button class="action-btn primary" id="completeBtn">Complete Session</button>
                     <button class="action-btn primary" id="saveBtn">Save Session (JSON)</button>
                     <button class="action-btn" id="exportPngBtn">Export PNG</button>
                 </div>
@@ -371,6 +537,47 @@
         </div>
     </div>
 
+    <script src="drawingCapture.js"></script>
     <script src="advanced-final.js"></script>
+    <script>
+        // Mobile sidebar toggle functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const sidePanel = document.querySelector('.side-panel');
+            
+            if (sidebarToggle && sidePanel) {
+                sidebarToggle.addEventListener('click', function() {
+                    sidePanel.classList.toggle('hidden');
+                    const isHidden = sidePanel.classList.contains('hidden');
+                    sidebarToggle.textContent = isHidden ? '☰ Panel' : '✕ Close';
+                });
+
+                // Close sidebar when clicking outside on mobile
+                document.addEventListener('click', function(e) {
+                    if (window.innerWidth <= 768) {
+                        if (!sidePanel.contains(e.target) && !sidebarToggle.contains(e.target)) {
+                            if (!sidePanel.classList.contains('hidden')) {
+                                sidePanel.classList.add('hidden');
+                                sidebarToggle.textContent = '☰ Panel';
+                            }
+                        }
+                    }
+                });
+
+                // Auto-hide sidebar on mobile on load
+                function checkScreenSize() {
+                    if (window.innerWidth <= 768) {
+                        sidePanel.classList.add('hidden');
+                        sidebarToggle.textContent = '☰ Panel';
+                    } else {
+                        sidePanel.classList.remove('hidden');
+                    }
+                }
+
+                checkScreenSize();
+                window.addEventListener('resize', checkScreenSize);
+            }
+        });
+    </script>
 </body>
 </html>

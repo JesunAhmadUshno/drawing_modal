@@ -180,6 +180,16 @@ footer {
 }
 
 /* Responsive Design */
+@media (max-width: 1024px) {
+    .container {
+        padding: 25px;
+    }
+    
+    header h1 {
+        font-size: 2.2rem;
+    }
+}
+
 @media (max-width: 768px) {
     .container {
         padding: 20px;
@@ -189,12 +199,17 @@ footer {
         font-size: 1.8rem;
     }
     
+    .subtitle {
+        font-size: 1rem;
+    }
+    
     .canvas-container {
         height: 400px;
     }
     
     .info-panel {
         grid-template-columns: 1fr;
+        padding: 15px;
     }
     
     .controls {
@@ -203,5 +218,73 @@ footer {
     
     .btn {
         width: 100%;
+        min-height: 44px;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        padding: 10px;
+    }
+    
+    .container {
+        padding: 15px;
+    }
+    
+    header h1 {
+        font-size: 1.5rem;
+        margin-bottom: 8px;
+    }
+    
+    .subtitle {
+        font-size: 0.9rem;
+    }
+    
+    .canvas-container {
+        height: 300px;
+    }
+    
+    .info-panel {
+        gap: 10px;
+        padding: 12px;
+    }
+    
+    .value {
+        font-size: 1rem;
+    }
+    
+    .btn {
+        padding: 10px 20px;
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 320px) {
+    header h1 {
+        font-size: 1.3rem;
+    }
+    
+    .canvas-container {
+        height: 250px;
+    }
+    
+    .btn {
+        padding: 8px 15px;
+        font-size: 0.85rem;
+    }
+    
+    .label, .value {
+        font-size: 0.85rem;
+    }
+}
+
+/* Landscape mode for mobile */
+@media (max-width: 768px) and (orientation: landscape) {
+    .canvas-container {
+        height: 350px;
+    }
+    
+    .info-panel {
+        grid-template-columns: repeat(2, 1fr);
     }
 }
