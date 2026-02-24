@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentation - Sprint 2 Drawing Capture</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        h2 {
+            color: #333;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        h3 {
+            color: #555;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        p, li {
+            line-height: 1.6;
+            color: #444;
+            margin-bottom: 10px;
+        }
+
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        pre {
+            background: #1f2937;
+            color: #10b981;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+
+        pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .feature-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .feature-card h4 {
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+
+        ul {
+            margin-left: 20px;
+        }
+
+        .warning {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+
+        .info {
+            background: #dbeafe;
+            border-left: 4px solid #3b82f6;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-link">← Back to App</a>
+        
+        <h1>📚 Sprint 2: Drawing Capture Documentation</h1>
+        <p><strong>Version:</strong> 1.0 | <strong>Status:</strong> Production Ready | <strong>Deployed:</strong> GitHub Pages</p>
+
+        <h2>🎯 Overview</h2>
+        <p>
+            This is a serverless drawing capture system that runs entirely in the browser. 
+            It captures real-time drawing data including stroke paths, timestamps, input types 
+            (stylus/finger/mouse), and device metadata. No backend server required!
+        </p>
+
+        <h2>✨ Features</h2>
+        <div class="feature-grid">
+            <div class="feature-card">
+                <h4>🖊️ Multi-Input Support</h4>
+                <p>Detects and records stylus, finger, and mouse inputs separately</p>
+            </div>
+            <div class="feature-card">
+                <h4>⏱️ Temporal Recording</h4>
+                <p>Captures precise timestamps (milliseconds) for every point</p>
+            </div>
+            <div class="feature-card">
+                <h4>📊 Real-time Analytics</h4>
+                <p>Live stroke count, point count, and data preview</p>
+            </div>
+            <div class="feature-card">
+                <h4>💾 Local Storage</h4>
+                <p>Save sessions to browser storage (serverless persistence)</p>
+            </div>
+            <div class="feature-card">
+                <h4>📥 JSON Export</h4>
+                <p>Download complete session data as structured JSON</p>
+            </div>
+            <div class="feature-card">
+                <h4>📱 Cross-Platform</h4>
+                <p>Works on desktop, tablet, and mobile devices</p>
+            </div>
+        </div>
+
+        <h2>🚀 How to Use</h2>
+        
+        <h3>Basic Interface</h3>
+        <ol>
+            <li>Click <strong>"Start Session"</strong> to begin recording</li>
+            <li>Draw on the canvas using mouse, stylus, or finger</li>
+            <li>Watch real-time stats update (strokes, points, input type)</li>
+            <li>Click <strong>"End Session"</strong> when finished</li>
+            <li>Click <strong>"Download JSON"</strong> to export session data</li>
+        </ol>
+
+        <h3>Advanced Interface</h3>
+        <ol>
+            <li>Includes all basic features plus:</li>
+            <li>Real-time data preview panel</li>
+            <li>Device information display</li>
+            <li><strong>"Save to Storage"</strong> button for browser persistence</li>
+            <li>Enhanced analytics and debugging info</li>
+        </ol>
+
+        <h2>📦 Data Format</h2>
+        <p>The system exports data in the following JSON structure:</p>
+        
+        <pre><code>{
+  "sessionId": "s-1708704000000-abc123def",
+  "taskId": "basic-drawing-task",
+  "taskStartTime": "2026-02-24T10:00:00.000Z",
+  "taskEndTime": "2026-02-24T10:02:30.500Z",
+  "deviceInfo": {
+    "userAgent": "Mozilla/5.0...",
+    "deviceType": "mobile",
+    "screenWidth": 1024,
+    "screenHeight": 768,
+    "screenDPI": 264,
+    "os": "Windows"
+  },
+  "strokes": [
+    {
+      "strokeId": "str-1708704000100-1",
+      "startTime": "2026-02-24T10:00:05.100Z",
+      "endTime": "2026-02-24T10:00:06.850Z",
+      "inputType": "stylus",
+      "pressureData": true,
+      "points": [
+        {
+          "x": 150,
+          "y": 200,
+          "timestamp": 1708704005100,
+          "pressure": 0.8,
+          "tiltX": -15,
+          "tiltY": 10,
+          "radiusX": 2,
+          "radiusY": 2
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "totalStrokes": 8,
+    "totalPoints": 1247,
+    "avgPointsPerStroke": 155.9,
+    "sessionDuration": 150500
+  }
+}</code></pre>
+
+        <h2>🔧 Technical Details</h2>
+        
+        <h3>Input Detection</h3>
+        <p>Uses the <strong>Pointer Events API</strong> for unified input handling:</p>
+        <ul>
+            <li><code>pointerType === 'pen'</code> → Stylus detected</li>
+            <li><code>pointerType === 'touch'</code> + large contact area → Finger</li>
+            <li><code>pointerType === 'touch'</code> + small contact area → Stylus (alternative)</li>
+            <li><code>pointerType === 'mouse'</code> → Mouse input</li>
+        </ul>
+
+        <h3>Captured Data Points</h3>
+        <p>For each point in a stroke, the following is recorded:</p>
+        <ul>
+            <li><code>x, y</code>: Canvas coordinates (pixels)</li>
+            <li><code>timestamp</code>: Unix milliseconds (precise timing)</li>
+            <li><code>pressure</code>: Pen pressure (0-1, if available)</li>
+            <li><code>tiltX, tiltY</code>: Stylus tilt angles (degrees)</li>
+            <li><code>radiusX, radiusY</code>: Contact area dimensions (pixels)</li>
+        </ul>
+
+        <h3>Browser Storage</h3>
+        <p>
+            Sessions can be saved to <code>localStorage</code> for persistence across page reloads.
+            Each session is stored with a unique key: <code>drawing-session-{sessionId}</code>
+        </p>
+
+        <div class="info">
+            <strong>💡 Storage Limits:</strong> Most browsers allow 5-10MB of localStorage. 
+            A typical drawing session with 1000 points uses ~100KB, so you can store 50-100 sessions.
+        </div>
+
+        <h2>⚙️ API Reference</h2>
+        
+        <h3>DrawingCaptureSystem Class</h3>
+        
+        <h4>Constructor</h4>
+        <pre><code>const captureSystem = new DrawingCaptureSystem(canvasElement);</code></pre>
+
+        <h4>Methods</h4>
+        <ul>
+            <li><code>startSession(taskId)</code> - Start new recording session</li>
+            <li><code>endSession()</code> - End current session</li>
+            <li><code>clearSession()</code> - Reset session and clear canvas</li>
+            <li><code>getSessionData()</code> - Get current session data object</li>
+            <li><code>downloadSession()</code> - Export session as JSON file</li>
+            <li><code>saveToLocalStorage()</code> - Save to browser storage</li>
+        </ul>
+
+        <h4>Static Methods</h4>
+        <ul>
+            <li><code>DrawingCaptureSystem.loadAllSessions()</code> - Retrieve all stored sessions</li>
+            <li><code>DrawingCaptureSystem.clearAllSessions()</code> - Delete all stored sessions</li>
+        </ul>
+
+        <h2>🌐 Deployment</h2>
+        
+        <h3>GitHub Pages Setup</h3>
+        <ol>
+            <li>All files are in the <code>/docs</code> directory</li>
+            <li>GitHub Actions workflow automatically deploys on push to <code>main</code></li>
+            <li>No build process required (pure HTML/CSS/JS)</li>
+            <li>Enable GitHub Pages in repository settings → Source: GitHub Actions</li>
+        </ol>
+
+        <div class="warning">
+            <strong>⚠️ Important:</strong> This is a client-side only application. 
+            All data is stored in the browser or downloaded locally. 
+            There is no server upload or cloud storage integration in this version.
+        </div>
+
+        <h2>🔍 Browser Compatibility</h2>
+        <ul>
+            <li>✅ Chrome/Edge 80+</li>
+            <li>✅ Firefox 75+</li>
+            <li>✅ Safari 13+</li>
+            <li>✅ Mobile browsers (iOS Safari, Chrome Mobile)</li>
+            <li>✅ iPad with Apple Pencil (full pressure/tilt support)</li>
+            <li>✅ Android tablets with stylus</li>
+        </ul>
+
+        <h2>📊 Use Cases</h2>
+        <ul>
+            <li>Handwriting analysis research</li>
+            <li>Drawing behavior studies</li>
+            <li>Digital pen input research</li>
+            <li>Temporal pattern analysis</li>
+            <li>Psychological assessments via drawing tasks</li>
+            <li>Educational drawing exercises</li>
+        </ul>
+
+        <h2>🛠️ Future Enhancements</h2>
+        <p>Planned for Sprint 4:</p>
+        <ul>
+            <li>Cloud storage integration (Firebase/AWS S3)</li>
+            <li>Real-time feature extraction</li>
+            <li>Session replay functionality</li>
+            <li>Multi-session comparison</li>
+            <li>Advanced analytics dashboard</li>
+        </ul>
+
+        <h2>📞 Support</h2>
+        <p>
+            For questions or issues, refer to the project documentation in 
+            <code>PROJECT_DOCUMENTATION.md</code> and <code>DYNAMIC_FEATURES_DOCUMENTATION.md</code>
+        </p>
+
+        <hr style="margin: 30px 0;">
+        
+        <p style="text-align: center; color: #666;">
+            <strong>Sprint 2: Drawing Capture System</strong><br>
+            Version 1.0 | Deployed on GitHub Pages | Serverless Architecture
+        </p>
+    </div>
+</body>
+</html>

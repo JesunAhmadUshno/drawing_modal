@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Drawing Capture - Sprint 2</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: #1e3c72;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 20px;
+        }
+
+        .canvas-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .canvas-container {
+            background: white;
+            border: 3px solid #1e3c72;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        #drawingCanvas {
+            display: block;
+            cursor: crosshair;
+            touch-action: none;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .sidebar {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .panel {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .panel h3 {
+            color: #1e3c72;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 8px;
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .stat-value {
+            font-size: 1.3rem;
+            color: #1e3c72;
+            font-weight: 700;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-primary { background: #1e3c72; color: white; }
+        .btn-success { background: #10b981; color: white; }
+        .btn-warning { background: #f59e0b; color: white; }
+        .btn-danger { background: #ef4444; color: white; }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .data-preview {
+            background: #1f2937;
+            color: #10b981;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #1e3c72;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 1024px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-link">← Back to Basic Interface</a>
+        
+        <header>
+            <h1>🎨 Advanced Drawing Capture</h1>
+            <p class="subtitle">Sprint 2 - Full Feature Interface with Real-time Analytics</p>
+        </header>
+
+        <div class="main-grid">
+            <div class="canvas-section">
+                <div class="canvas-container">
+                    <canvas id="drawingCanvas" width="900" height="600"></canvas>
+                </div>
+                
+                <div class="toolbar">
+                    <button id="startBtn" class="btn btn-primary">Start Session</button>
+                    <button id="clearBtn" class="btn btn-warning" disabled>Clear Canvas</button>
+                    <button id="endBtn" class="btn btn-danger" disabled>End Session</button>
+                    <button id="downloadBtn" class="btn btn-success" disabled>Download JSON</button>
+                    <button id="saveBtn" class="btn btn-success" disabled>Save to Storage</button>
+                </div>
+            </div>
+
+            <div class="sidebar">
+                <div class="panel">
+                    <h3>📊 Session Stats</h3>
+                    <div class="stat-grid">
+                        <div class="stat-item">
+                            <span class="stat-label">Session ID</span>
+                            <span class="stat-value" id="sessionId">-</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Input Type</span>
+                            <span class="stat-value" id="inputType">-</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Strokes</span>
+                            <span class="stat-value" id="strokeCount">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Points</span>
+                            <span class="stat-value" id="pointCount">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h3>💾 Data Preview</h3>
+                    <div class="data-preview" id="dataPreview">No session data yet...</div>
+                </div>
+
+                <div class="panel">
+                    <h3>🔧 Device Info</h3>
+                    <div class="data-preview" id="deviceInfo" style="max-height: 150px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="drawingCapture.js"></script>
+    <script>
+        const canvas = document.getElementById('drawingCanvas');
+        const captureSystem = new DrawingCaptureSystem(canvas);
+        
+        // UI Elements
+        const startBtn = document.getElementById('startBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const endBtn = document.getElementById('endBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const saveBtn = document.getElementById('saveBtn');
+        const sessionIdEl = document.getElementById('sessionId');
+        const inputTypeEl = document.getElementById('inputType');
+        const strokeCountEl = document.getElementById('strokeCount');
+        const pointCountEl = document.getElementById('pointCount');
+        const dataPreviewEl = document.getElementById('dataPreview');
+        const deviceInfoEl = document.getElementById('deviceInfo');
+        
+        // Display device info
+        const deviceInfo = {
+            userAgent: navigator.userAgent.substring(0, 50) + '...',
+            platform: navigator.platform,
+            screen: `${screen.width}×${screen.height}`,
+            pixelRatio: window.devicePixelRatio,
+            language: navigator.language
+        };
+        deviceInfoEl.textContent = JSON.stringify(deviceInfo, null, 2);
+        
+        // Event Handlers
+        startBtn.addEventListener('click', () => {
+            captureSystem.startSession('advanced-drawing-task');
+            const shortId = captureSystem.session.sessionId.substring(2, 15) + '...';
+            sessionIdEl.textContent = shortId;
+            startBtn.disabled = true;
+            clearBtn.disabled = false;
+            endBtn.disabled = false;
+            saveBtn.disabled = false;
+            updateDataPreview();
+        });
+        
+        clearBtn.addEventListener('click', () => {
+            if (confirm('Clear canvas and reset session?')) {
+                captureSystem.clearSession();
+                strokeCountEl.textContent = '0';
+                pointCountEl.textContent = '0';
+                inputTypeEl.textContent = '-';
+                updateDataPreview();
+            }
+        });
+        
+        endBtn.addEventListener('click', () => {
+            captureSystem.endSession();
+            downloadBtn.disabled = false;
+            updateDataPreview();
+        });
+        
+        downloadBtn.addEventListener('click', () => {
+            captureSystem.downloadSession();
+        });
+        
+        saveBtn.addEventListener('click', () => {
+            if (captureSystem.saveToLocalStorage()) {
+                alert('Session saved to browser storage!');
+            } else {
+                alert('Failed to save session.');
+            }
+        });
+        
+        // Update stats in real-time
+        let updateInterval = setInterval(() => {
+            if (captureSystem.session && captureSystem.session.strokes) {
+                strokeCountEl.textContent = captureSystem.session.strokes.length;
+                
+                const totalPoints = captureSystem.session.strokes.reduce((sum, stroke) => 
+                    sum + stroke.points.length, 0);
+                pointCountEl.textContent = totalPoints;
+                
+                if (captureSystem.currentStroke) {
+                    inputTypeEl.textContent = captureSystem.currentStroke.inputType;
+                }
+            }
+        }, 100);
+        
+        function updateDataPreview() {
+            if (!captureSystem.session) {
+                dataPreviewEl.textContent = 'No session data yet...';
+                return;
+            }
+            
+            const preview = {
+                sessionId: captureSystem.session.sessionId.substring(0, 20) + '...',
+                taskId: captureSystem.session.taskId,
+                startTime: captureSystem.session.taskStartTime,
+                strokes: captureSystem.session.strokes.length,
+                latestStroke: captureSystem.session.strokes.length > 0 ? {
+                    strokeId: captureSystem.session.strokes[captureSystem.session.strokes.length - 1].strokeId.substring(0, 20) + '...',
+                    points: captureSystem.session.strokes[captureSystem.session.strokes.length - 1].points.length,
+                    inputType: captureSystem.session.strokes[captureSystem.session.strokes.length - 1].inputType
+                } : null
+            };
+            
+            dataPreviewEl.textContent = JSON.stringify(preview, null, 2);
+        }
+        
+        // Update preview when strokes change
+        canvas.addEventListener('pointerup', () => {
+            setTimeout(updateDataPreview, 100);
+        });
+    </script>
+</body>
+</html>
