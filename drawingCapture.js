@@ -31,6 +31,8 @@ class DrawingCaptureSystem {
         this.hoverPaths = [];         // All hover trajectories
         this.lastHoverTime = null;    // Last hover event time
         this.lastCompletedHoverPathId = null; // Track last hover path for linking to strokes
+        this.lastHoverPoint = null;   // Last hover point for velocity calculation
+        this.lastStrokePoint = null;  // Last stroke point for velocity calculation
         
         // Only set up canvas and listeners if not integrated with another drawing app
         if (!skipListeners) {
@@ -224,6 +226,9 @@ class DrawingCaptureSystem {
             points: []
         };
         
+        // Reset last stroke point for velocity calculation
+        this.lastStrokePoint = null;
+        
         // Log draw start event
         this.logEvent('draw_start', {
             timestamp: now,
@@ -271,6 +276,15 @@ class DrawingCaptureSystem {
         this.currentStroke.strokeDuration = strokeDuration;
         this.activeDuration += strokeDuration;
         
+        // Calculate trajectory length
+        this.currentStroke.trajectoryLength = this.calculateTrajectoryLength(this.currentStroke.points);
+        
+        // Calculate average metrics
+        const avgMetrics = this.calculateAverageMetrics(this.currentStroke.points);
+        this.currentStroke.averagePressure = avgMetrics.pressure;
+        this.currentStroke.averageVelocity = avgMetrics.velocity;
+        this.currentStroke.maxVelocity = avgMetrics.maxVelocity;
+        
         // Record when drawing ended
         this.lastDrawEndTime = now;
         
@@ -283,11 +297,14 @@ class DrawingCaptureSystem {
             timestamp: now,
             strokeId: this.currentStroke.strokeId,
             strokeDuration: strokeDuration,
-            pointsCount: this.currentStroke.points.length
+            pointsCount: this.currentStroke.points.length,
+            trajectoryLength: this.currentStroke.trajectoryLength
         });
         
-        console.log(`Stroke ${this.currentStroke.strokeId} completed: ${this.currentStroke.points.length} points, duration: ${strokeDuration}ms`);
+        console.log(`Stroke ${this.currentStroke.strokeId} completed: ${this.currentStroke.points.length} points, duration: ${strokeDuration}ms, length: ${this.currentStroke.trajectoryLength}px`);
         
+        // Reset last stroke point
+        this.lastStrokePoint = null;
         this.currentStroke = null;
         
         // Start new hover path for in-air tracking
@@ -301,18 +318,37 @@ class DrawingCaptureSystem {
     }
 
     addPoint(event, x, y) {
+        const now = event.timeStamp || Date.now();
+        
+        // Calculate velocity from last point
+        let velocity = 0;
+        if (this.lastStrokePoint) {
+            const dx = x - this.lastStrokePoint.x;
+            const dy = y - this.lastStrokePoint.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            const timeDelta = (now - this.lastStrokePoint.timestamp) / 1000; // seconds
+            velocity = timeDelta > 0 ? distance / timeDelta : 0; // pixels per second
+        }
+        
         const point = {
             x: x,
             y: y,
-            timestamp: event.timeStamp || Date.now(),
+            timestamp: now,
             pressure: event.pressure || 0,
             tiltX: event.tiltX || 0,
             tiltY: event.tiltY || 0,
+            twist: event.twist || 0,
+            width: event.width || 1,
+            height: event.height || 1,
             radiusX: event.width || 1,
-            radiusY: event.height || 1
+            radiusY: event.height || 1,
+            altitude: this.calculateAltitude(event.tiltX || 0, event.tiltY || 0),
+            azimuth: this.calculateAzimuth(event.tiltX || 0, event.tiltY || 0),
+            velocity: Math.round(velocity * 100) / 100 // px/s rounded to 2 decimals
         };
         
         this.currentStroke.points.push(point);
+        this.lastStrokePoint = point;
     }
 
     // In-air trajectory tracking methods
@@ -330,6 +366,9 @@ class DrawingCaptureSystem {
             points: []
         };
         
+        // Reset last hover point for velocity calculation
+        this.lastHoverPoint = null;
+        
         this.isHovering = true;
         
         this.logEvent('hover_start', {
@@ -346,6 +385,14 @@ class DrawingCaptureSystem {
         this.currentHoverPath.endTimeMs = now;
         this.currentHoverPath.duration = now - this.currentHoverPath.startTimeMs;
         
+        // Calculate hover trajectory length
+        this.currentHoverPath.trajectoryLength = this.calculateTrajectoryLength(this.currentHoverPath.points);
+        
+        // Calculate average hover metrics
+        const avgMetrics = this.calculateAverageMetrics(this.currentHoverPath.points);
+        this.currentHoverPath.averageVelocity = avgMetrics.velocity;
+        this.currentHoverPath.maxVelocity = avgMetrics.maxVelocity;
+        
         // Save hover path ID for linking to next stroke
         this.lastCompletedHoverPathId = this.currentHoverPath.hoverPathId;
         
@@ -357,12 +404,15 @@ class DrawingCaptureSystem {
                 timestamp: now,
                 hoverPathId: this.currentHoverPath.hoverPathId,
                 pointsCount: this.currentHoverPath.points.length,
-                duration: this.currentHoverPath.duration
+                duration: this.currentHoverPath.duration,
+                trajectoryLength: this.currentHoverPath.trajectoryLength
             });
             
-            console.log(`Hover path ${this.currentHoverPath.hoverPathId} completed: ${this.currentHoverPath.points.length} points, duration: ${this.currentHoverPath.duration}ms`);
+            console.log(`Hover path ${this.currentHoverPath.hoverPathId} completed: ${this.currentHoverPath.points.length} points, duration: ${this.currentHoverPath.duration}ms, length: ${this.currentHoverPath.trajectoryLength}px`);
         }
         
+        // Reset last hover point
+        this.lastHoverPoint = null;
         this.currentHoverPath = null;
         this.isHovering = false;
     }
@@ -388,6 +438,16 @@ class DrawingCaptureSystem {
         
         this.lastHoverTime = now;
         
+        // Calculate hover velocity from last hover point
+        let hoverVelocity = 0;
+        if (this.lastHoverPoint) {
+            const dx = x - this.lastHoverPoint.x;
+            const dy = y - this.lastHoverPoint.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            const timeDelta = (now - this.lastHoverPoint.timestamp) / 1000; // seconds
+            hoverVelocity = timeDelta > 0 ? distance / timeDelta : 0; // pixels per second
+        }
+        
         const hoverPoint = {
             x: x,
             y: y,
@@ -396,11 +456,16 @@ class DrawingCaptureSystem {
             tiltX: event.tiltX || 0,
             tiltY: event.tiltY || 0,
             twist: event.twist || 0,
-            altitude: this.calculateAltitude(event.tiltX, event.tiltY),
-            azimuth: this.calculateAzimuth(event.tiltX, event.tiltY)
+            width: event.width || 1,
+            height: event.height || 1,
+            distance: event.distance || 0, // Height above surface (if supported)
+            altitude: this.calculateAltitude(event.tiltX || 0, event.tiltY || 0),
+            azimuth: this.calculateAzimuth(event.tiltX || 0, event.tiltY || 0),
+            velocity: Math.round(hoverVelocity * 100) / 100 // px/s rounded to 2 decimals
         };
         
         this.currentHoverPath.points.push(hoverPoint);
+        this.lastHoverPoint = hoverPoint;
     }
 
     // Calculate altitude angle from tilt data (angle from surface)
@@ -416,6 +481,47 @@ class DrawingCaptureSystem {
         let azimuth = Math.atan2(tiltY, tiltX) * (180 / Math.PI);
         if (azimuth < 0) azimuth += 360;
         return azimuth;
+    }
+
+    // Calculate trajectory length from sequence of points
+    calculateTrajectoryLength(points) {
+        if (!points || points.length < 2) return 0;
+        
+        let length = 0;
+        for (let i = 1; i < points.length; i++) {
+            const dx = points[i].x - points[i-1].x;
+            const dy = points[i].y - points[i-1].y;
+            length += Math.sqrt(dx * dx + dy * dy);
+        }
+        
+        return Math.round(length * 100) / 100; // Round to 2 decimals
+    }
+
+    // Calculate average metrics from points array
+    calculateAverageMetrics(points) {
+        if (!points || points.length === 0) {
+            return { pressure: 0, velocity: 0, maxVelocity: 0 };
+        }
+        
+        let totalPressure = 0;
+        let totalVelocity = 0;
+        let maxVelocity = 0;
+        let velocityCount = 0;
+        
+        points.forEach(point => {
+            totalPressure += point.pressure || 0;
+            if (point.velocity !== undefined) {
+                totalVelocity += point.velocity;
+                velocityCount++;
+                maxVelocity = Math.max(maxVelocity, point.velocity);
+            }
+        });
+        
+        return {
+            pressure: Math.round((totalPressure / points.length) * 1000) / 1000,
+            velocity: velocityCount > 0 ? Math.round((totalVelocity / velocityCount) * 100) / 100 : 0,
+            maxVelocity: Math.round(maxVelocity * 100) / 100
+        };
     }
 
     attachEventListeners() {

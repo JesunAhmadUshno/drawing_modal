@@ -395,11 +395,24 @@ class DrawingApp {
         const pressure = this.pressureSensitive && e.pressure !== undefined ? e.pressure : 0.5;
         const tiltX = e.tiltX || 0;
         const tiltY = e.tiltY || 0;
+        const twist = e.twist || 0;
+        const width = e.width || 1;
+        const height = e.height || 1;
+        const distance = e.distance || 0;
 
-        // Update UI
+        // Update UI - Basic Input
         document.getElementById('inputType').textContent = inputType;
         document.getElementById('pressure').textContent = pressure.toFixed(3);
         document.getElementById('tilt').textContent = `${tiltX}°/${tiltY}°`;
+        document.getElementById('twist').textContent = twist > 0 ? `${twist}°` : '-';
+        document.getElementById('contactSize').textContent = `${width.toFixed(1)} / ${height.toFixed(1)}`;
+        
+        // Update In-Air status
+        const isInAir = this.captureSystem.isHovering;
+        document.getElementById('inAir').textContent = isInAir ? 'Yes (Hovering)' : 'No';
+        
+        // Update Hover Metrics
+        this.updateHoverMetrics();
 
         return {
             inputType,
@@ -412,6 +425,72 @@ class DrawingApp {
             opacity: this.opacity,
             tool: this.currentTool
         };
+    }
+
+    updateHoverMetrics() {
+        const captureSystem = this.captureSystem;
+        
+        // Display total hover path count
+        document.getElementById('hoverPathCount').textContent = captureSystem.hoverPaths.length;
+        
+        // Update last stroke metrics
+        if (captureSystem.session && captureSystem.session.strokeData.length > 0) {
+            const lastStroke = captureSystem.session.strokeData[captureSystem.session.strokeData.length - 1];
+            document.getElementById('strokeDuration').textContent = lastStroke.strokeDuration ? 
+                `${(lastStroke.strokeDuration / 1000).toFixed(2)}s` : '-';
+            document.getElementById('strokeLength').textContent = lastStroke.trajectoryLength ? 
+                `${lastStroke.trajectoryLength} px` : '-';
+            document.getElementById('strokeAvgSpeed').textContent = lastStroke.averageVelocity ? 
+                `${lastStroke.averageVelocity} px/s` : '-';
+            document.getElementById('strokeMaxSpeed').textContent = lastStroke.maxVelocity ? 
+                `${lastStroke.maxVelocity} px/s` : '-';
+            document.getElementById('strokeAvgPressure').textContent = lastStroke.averagePressure ? 
+                `${lastStroke.averagePressure.toFixed(3)}` : '-';
+        } else {
+            document.getElementById('strokeDuration').textContent = '-';
+            document.getElementById('strokeLength').textContent = '-';
+            document.getElementById('strokeAvgSpeed').textContent = '-';
+            document.getElementById('strokeMaxSpeed').textContent = '-';
+            document.getElementById('strokeAvgPressure').textContent = '-';
+        }
+        
+        // If currently hovering, show real-time metrics
+        if (captureSystem.isHovering && captureSystem.currentHoverPath) {
+            const hoverPath = captureSystem.currentHoverPath;
+            const duration = Date.now() - hoverPath.startTimeMs;
+            const lastPoint = hoverPath.points[hoverPath.points.length - 1];
+            
+            document.getElementById('hoverDuration').textContent = `${(duration / 1000).toFixed(2)}s`;
+            document.getElementById('hoverVelocity').textContent = lastPoint && lastPoint.velocity ? `${lastPoint.velocity} px/s` : '-';
+            document.getElementById('hoverLength').textContent = hoverPath.points.length > 0 ? 
+                `${captureSystem.calculateTrajectoryLength(hoverPath.points)} px` : '-';
+            document.getElementById('hoverDistance').textContent = lastPoint && lastPoint.distance > 0 ? 
+                `${lastPoint.distance.toFixed(2)} mm` : '-';
+        } else {
+            // Show last completed hover path stats
+            const lastHoverPath = captureSystem.hoverPaths[captureSystem.hoverPaths.length - 1];
+            if (lastHoverPath) {
+                document.getElementById('hoverDuration').textContent = `${(lastHoverPath.duration / 1000).toFixed(2)}s`;
+                document.getElementById('hoverVelocity').textContent = lastHoverPath.averageVelocity ? 
+                    `${lastHoverPath.averageVelocity} px/s (avg)` : '-';
+                document.getElementById('hoverLength').textContent = lastHoverPath.trajectoryLength ? 
+                    `${lastHoverPath.trajectoryLength} px` : '-';
+                document.getElementById('hoverDistance').textContent = '-';
+            } else {
+                document.getElementById('hoverDuration').textContent = '-';
+                document.getElementById('hoverVelocity').textContent = '-';
+                document.getElementById('hoverLength').textContent = '-';
+                document.getElementById('hoverDistance').textContent = '-';
+            }
+        }
+        
+        // Calculate and show current/last stroke velocity
+        if (this.session && this.session.currentStroke && this.session.currentStroke.points.length > 0) {
+            const lastPoint = this.session.currentStroke.points[this.session.currentStroke.points.length - 1];
+            document.getElementById('velocity').textContent = lastPoint.velocity ? `${lastPoint.velocity} px/s` : '-';
+        } else {
+            document.getElementById('velocity').textContent = '-';
+        }
     }
 
     handleStart(e) {
@@ -594,6 +673,11 @@ function updateMetricsDisplay() {
         document.getElementById('activeDuration').textContent = metrics.activeDurationSeconds + 's';
         document.getElementById('pauseDuration').textContent = metrics.pauseDurationSeconds + 's';
         document.getElementById('status').textContent = metrics.status.toUpperCase();
+    }
+    
+    // Update hover metrics
+    if (appInstance.updateHoverMetrics) {
+        appInstance.updateHoverMetrics();
     }
 }
 
