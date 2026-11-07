@@ -5,7 +5,9 @@ A fully-featured, serverless drawing canvas application with comprehensive data 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![GitHub Pages](https://img.shields.io/badge/Demo-Live-success)](https://jesunahmadushno.github.io/drawing_modal/)
 [![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%7C%20Tablet%20%7C%20Desktop-blue)](https://jesunahmadushno.github.io/drawing_modal/)
-[![Data Points](https://img.shields.io/badge/Data%20Capture-20%2B%20metrics%20per%20point-orange)]()
+Live dashboard: https://jesunahmadushno.github.io/drawing_modal/dashboard/ (runs the capture engine on your own strokes; source in `site/`, known-answer check in `site/src/capture.check.mjs`)
+
+[![Data Points](https://img.shields.io/badge/Data%20Capture-14%20fields%20per%20point-orange)]()
 
 ---
 

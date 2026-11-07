@@ -1,0 +1,52 @@
+name: Pages
+
+# Publishes the drawing app at the Pages root (unchanged) and the live dashboard from site/ at /dashboard/.
+# Requires Settings > Pages > Source: GitHub Actions (the repo currently uses the legacy branch build).
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+      - run: npm ci
+        working-directory: site
+      - run: npm run build
+        working-directory: site
+      - name: Assemble app at root and dashboard at /dashboard/
+        run: |
+          mkdir _site
+          git ls-files | grep -vE '^(site/|\.github/|\.gitignore$)' | xargs -d '\n' cp --parents -t _site
+          test -f _site/index.html && test -f _site/drawingCapture.js && test -f _site/advanced-final.js
+          cp -r site/dist _site/dashboard
+          touch _site/.nojekyll
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
