@@ -23,7 +23,7 @@
 - **Total Code**: 2,400+ lines
 - **Classes**: 3 main classes (DrawingApp, DrawingCaptureSystem, DrawingSession)
 - **Methods**: 60+ methods
-- **Measurements**: 13+ per point
+- **Measurements**: 14 fields per stroke point (counted from `addPoint`)
 - **Events**: 7 types
 - **UI Panels**: 6 sections
 
@@ -164,7 +164,7 @@ calculateTrajectoryLength(points) {
 
 **Formula:**
 ```
-altitude = 90° - arctan(√(tiltX² + tiltY²)) × (180/π)
+altitude = max(0, 90° - √(tiltX² + tiltY²))      (as implemented: no arctan is applied)
 
 Special case: If tiltX = 0 AND tiltY = 0, altitude = 90° (perpendicular)
 ```
@@ -177,6 +177,12 @@ calculateAltitude(tiltX, tiltY) {
     return Math.max(0, 90 - (tiltRadians * (180 / Math.PI)));
 }
 ```
+
+**Note:** the code converts to radians and straight back, so it computes 90° minus the tilt magnitude in degrees.
+This is an approximation, not the W3C Pointer Events tilt-to-altitude conversion
+(altitude = atan(1 / √(tan²tiltX + tan²tiltY))). The two agree near vertical and diverge with tilt:
+30°/30° gives 47.6° here vs 50.8° from the spec; 60°/60° gives 5.1° vs 22.2°. The dashboard's
+tilt calculator and `site/src/capture.check.mjs` compute both live.
 
 **Explanation:**
 - Converts tilt magnitude to radians

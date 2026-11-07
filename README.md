@@ -1,10 +1,10 @@
 # Drawing Modal - Advanced Canvas Capture System
 
-A fully-featured, serverless drawing canvas application with comprehensive data capture, tracking 20+ measurements per point including velocity, trajectory, twist, and in-air hover trajectories. Built for research, UX testing, drawing behavior analysis, and stylus interaction studies.
+A fully-featured, serverless drawing canvas application with comprehensive data capture, recording 14 fields per stroke point including velocity, trajectory, twist, and in-air hover trajectories. Built for research, UX testing, drawing behavior analysis, and stylus interaction studies.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![GitHub Pages](https://img.shields.io/badge/Demo-Live-success)](https://jesunachmadushno.github.io/drawing_modal/)
-[![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%7C%20Tablet%20%7C%20Desktop-blue)](https://jesunachmadushno.github.io/drawing_modal/)
+[![GitHub Pages](https://img.shields.io/badge/Demo-Live-success)](https://jesunahmadushno.github.io/drawing_modal/)
+[![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%7C%20Tablet%20%7C%20Desktop-blue)](https://jesunahmadushno.github.io/drawing_modal/)
 [![Data Points](https://img.shields.io/badge/Data%20Capture-20%2B%20metrics%20per%20point-orange)]()
 
 ---
@@ -23,7 +23,7 @@ A fully-featured, serverless drawing canvas application with comprehensive data 
 - **Session Duration Tracking** - Total, active, and pause time measurement
 - **Per-Stroke Metrics** - Duration, trajectory length, velocity, pressure
 - **Per-Hover Metrics** - In-air trajectory, velocity, distance, duration
-- **Comprehensive Measurements** (20+ per point):
+- **Comprehensive Measurements** (14 fields per point):
   - **Position Data** - X, Y coordinates with timestamps
   - **Pressure Data** - Input pressure (0-1 range)
   - **Tilt Angles** - TiltX, TiltY (-90° to 90°)
@@ -56,7 +56,7 @@ A fully-featured, serverless drawing canvas application with comprehensive data 
 ### Export Capabilities
 - **PNG Export** - High-quality image export
 - **JSON Export** - Complete session data with:
-  - Stroke-by-stroke breakdown with 20+ measurements per point
+  - Stroke-by-stroke breakdown with 14 fields per point
   - Hover paths with velocity, trajectory, and distance metrics
   - Device and environment information
   - Event timeline with timestamps (7 event types)
@@ -81,7 +81,7 @@ A fully-featured, serverless drawing canvas application with comprehensive data 
 ## 📁 Project Structure
 
 ```
-docs/
+drawing_modal/
 ├── index.html              # Main drawing interface (588 lines)
 ├── advanced.html           # Advanced drawing canvas (legacy)
 ├── advanced-final.js       # Drawing app logic (714 lines)
@@ -98,7 +98,7 @@ docs/
 - **Total Code Lines:** ~2,376 lines
 - **Classes:** 3 main classes (DrawingApp, DrawingCaptureSystem, DrawingSession)
 - **Methods:** 60+ methods across all classes
-- **Data Points Captured:** 20+ measurements per stroke point
+- **Data Points Captured:** 14 fields per stroke point (x, y, timestamp, pressure, tiltX, tiltY, twist, width, height, radiusX, radiusY, altitude, azimuth, velocity; counted from `addPoint` in drawingCapture.js)
 - **Event Types:** 7 distinct event types logged
 
 ---
@@ -107,7 +107,7 @@ docs/
 
 ### Online (Live Demo)
 Simply visit the application at:
-[https://jesunachmadushno.github.io/drawing_modal/](https://jesunachmadushno.github.io/drawing_modal/)
+[https://jesunahmadushno.github.io/drawing_modal/](https://jesunahmadushno.github.io/drawing_modal/)
 
 ### Local Setup
 
@@ -120,11 +120,11 @@ Simply visit the application at:
 2. **Open in browser**
    ```bash
    # Option 1: Direct file open
-   open docs/index.html
+   open index.html
    
    # Option 2: With local server
    python -m http.server 8000
-   # Then visit http://localhost:8000/docs/
+   # Then visit http://localhost:8000/
    ```
 
 ---
@@ -197,7 +197,7 @@ Simply visit the application at:
   - Operating system
   - Browser language
 
-### Per-Stroke Data (20+ measurements)
+### Per-Stroke Data (14 fields per point)
 **Stroke-Level Metrics:**
 - **Stroke ID** - Unique identifier (`str-{timestamp}-{number}`)
 - **Timestamps** - Start and end time (ISO 8601 format)
@@ -738,7 +738,7 @@ Perfect for sensitive work and GDPR compliance.
 - **Responsibilities:**
   - Session lifecycle management (start/pause/complete)
   - Duration tracking (total/active/pause with ms precision)
-  - Stroke data capture with 20+ measurements per point
+  - Stroke data capture with 14 fields per point
   - In-air trajectory tracking for stylus hover
   - Idle detection with configurable timeout
   - Event logging with chronological timeline
@@ -913,7 +913,7 @@ Perfect for sensitive work and GDPR compliance.
   - Stroke event logging with trajectory metrics
 
 - ✅ **Complete Data Export**
-  - 20+ measurements per stroke point
+  - 14 fields per stroke point
   - 10+ measurements per hover point
   - Stroke-level metrics (duration, trajectory, velocity, pressure)
   - Hover-level metrics (duration, trajectory, velocity, distance)
@@ -940,7 +940,7 @@ Perfect for sensitive work and GDPR compliance.
 - ✅ **All Core Features Working** - No known critical bugs
 - ✅ **Cross-Browser Compatible** - Chrome, Firefox, Safari, Edge
 - ✅ **Fully Responsive** - Mobile, tablet, desktop optimized
-- ✅ **Comprehensive Data Capture** - Session, stroke, hover, event tracking with 20+ measurements per point
+- ✅ **Comprehensive Data Capture** - Session, stroke, hover, event tracking with 14 fields per point
 
 ### Future Enhancements
 
@@ -1017,7 +1017,7 @@ Found a bug or have a feature request?
 ## 🎉 Get Started
 
 **Try it now:**
-[https://jesunachmadushno.github.io/drawing_modal/](https://jesunachmadushno.github.io/drawing_modal/)
+[https://jesunahmadushno.github.io/drawing_modal/](https://jesunahmadushno.github.io/drawing_modal/)
 
 **Clone the repo:**
 ```bash
